@@ -1,3 +1,5 @@
+// +build linux,cgo,!nogpu
+
 package main
 
 // #cgo linux CFLAGS: -I/usr/local/cuda/include

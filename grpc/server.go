@@ -34,7 +34,7 @@ func ServerUnaryInterceptor(opts ...cupti.Option) grpc.UnaryServerInterceptor {
 		if tracer == nil {
 			return handler(ctx, req)
 		}
-		span, ctx := tracer.StartSpanFromContext(ctx, "cupti")
+		span, ctx := opentracing.StartSpanFromContext(ctx, "cupti")
 		defer span.Finish()
 		cuptiHandle.SetContext(ctx)
 		err = cuptiHandle.Subscribe()

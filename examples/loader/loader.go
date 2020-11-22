@@ -1,3 +1,5 @@
+// +build linux,!nogpu
+
 package loader
 
 import (
