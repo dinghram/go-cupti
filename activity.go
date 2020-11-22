@@ -36,8 +36,8 @@ import (
 
 	//humanize "github.com/dustin/go-humanize"
 	opentracing "github.com/opentracing/opentracing-go"
-	"github.com/rai-project/go-cupti/types"
-	"github.com/rai-project/tracer"
+	"github.com/c3sr/go-cupti/types"
+	"github.com/c3sr/tracer"
 )
 
 const (

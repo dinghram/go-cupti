@@ -5,7 +5,7 @@ package cuptigrpc
 import (
 	"context"
 	opentracing "github.com/opentracing/opentracing-go"
-	cupti "github.com/rai-project/go-cupti"
+	cupti "github.com/c3sr/go-cupti"
 	"google.golang.org/grpc"
 )
 

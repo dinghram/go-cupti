@@ -3,7 +3,7 @@
 package cuptigrpc
 
 import (
-	cupti "github.com/rai-project/go-cupti"
+	cupti "github.com/c3sr/go-cupti"
 	"google.golang.org/grpc"
 )
 

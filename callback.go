@@ -23,8 +23,8 @@ import (
 	"github.com/opentracing/opentracing-go/ext"
 	spanlog "github.com/opentracing/opentracing-go/log"
 	"github.com/pkg/errors"
-	"github.com/rai-project/go-cupti/types"
-	tracer "github.com/rai-project/tracer"
+	"github.com/c3sr/go-cupti/types"
+	tracer "github.com/c3sr/tracer"
 )
 
 // demangling names adds overhead

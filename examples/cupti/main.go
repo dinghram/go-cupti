@@ -15,12 +15,12 @@ import (
 
 	sourcepath "github.com/GeertJohan/go-sourcepath"
 	"github.com/Unknwon/com"
-	"github.com/rai-project/config"
-	"github.com/rai-project/go-cupti"
-	"github.com/rai-project/logger"
-	"github.com/rai-project/tracer"
-	_ "github.com/rai-project/tracer/jaeger"
-	_ "github.com/rai-project/tracer/noop"
+	"github.com/c3sr/config"
+	"github.com/c3sr/go-cupti"
+	"github.com/c3sr/logger"
+	"github.com/c3sr/tracer"
+	_ "github.com/c3sr/tracer/jaeger"
+	_ "github.com/c3sr/tracer/noop"
 	"github.com/rainycape/dl"
 )
 

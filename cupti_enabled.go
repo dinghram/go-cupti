@@ -13,9 +13,9 @@ import (
 
 	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
-	"github.com/rai-project/go-cupti/types"
-	nvidiasmi "github.com/rai-project/nvidia-smi"
-	"github.com/rai-project/tracer"
+	"github.com/c3sr/go-cupti/types"
+	nvidiasmi "github.com/c3sr/nvidia-smi"
+	"github.com/c3sr/tracer"
 )
 
 type CUPTI struct {

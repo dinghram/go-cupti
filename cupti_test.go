@@ -3,7 +3,7 @@ package cupti
 import (
 	"testing"
 
-	"github.com/rai-project/go-cupti/types"
+	"github.com/c3sr/go-cupti/types"
 )
 
 func Test1(t *testing.T) {

@@ -8,7 +8,7 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-	"github.com/rai-project/go-cupti/types"
+	"github.com/c3sr/go-cupti/types"
 )
 
 type Error struct {

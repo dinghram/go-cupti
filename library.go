@@ -9,7 +9,7 @@ import (
 
 	"github.com/Unknwon/com"
 
-	"github.com/rai-project/config"
+	"github.com/c3sr/config"
 	"github.com/rainycape/dl"
 )
 
