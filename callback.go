@@ -29,11 +29,12 @@ import (
 
 // demangling names adds overhead
 func demangleName(n *C.char) string {
-	if n == nil {
-		return ""
-	}
-	mangledName := C.GoString(n)
-	return mangledName
+	return ""
+	// if n == nil {
+	// 	 return ""
+	// }
+	// mangledName := C.GoString(n)
+	// return mangledName
 	// name, err := demangle.ToString(mangledName)
 	// if err != nil {
 	// 	return mangledName
