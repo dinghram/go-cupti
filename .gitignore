@@ -766,3 +766,5 @@ paket-files/
 
 out
 *nvprof
+
+!clibrary/env
