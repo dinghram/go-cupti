@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/Unknwon/com"
+	"github.com/unknwon/com"
 
 	"github.com/c3sr/config"
 	"github.com/rainycape/dl"
