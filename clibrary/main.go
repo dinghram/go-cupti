@@ -14,7 +14,7 @@ import (
 	"github.com/c3sr/utils"
 	jaeger "github.com/uber/jaeger-client-go"
 
-	"github.com/k0kubun/pp"
+	"github.com/k0kubun/pp/v3"
 
 	"github.com/fatih/color"
 	homedir "github.com/mitchellh/go-homedir"

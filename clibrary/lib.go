@@ -18,7 +18,7 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"gitlab.com/NebulousLabs/fastrand"
 
-	"github.com/k0kubun/pp"
+	"github.com/k0kubun/pp/v3"
 	"github.com/c3sr/tracer"
 	_ "github.com/c3sr/tracer/jaeger"
 	// _ "github.com/c3sr/tracer/noop"
