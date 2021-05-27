@@ -29,17 +29,15 @@ import (
 
 // demangling names adds overhead
 func demangleName(n *C.char) string {
-	return ""
-	// if n == nil {
-	// 	 return ""
-	// }
-	// mangledName := C.GoString(n)
-	// return mangledName
-	// name, err := demangle.ToString(mangledName)
-	// if err != nil {
-	// 	return mangledName
-	// }
-	// return name
+	if n == nil {
+		 return ""
+	}
+	mangledName := C.GoString(n)
+	name, err := demangle.ToString(mangledName)
+	if err != nil {
+		return mangledName
+	}
+	return name
 }
 
 // Returns a timestamp normalized to correspond with the start and end timestamps reported in the CUPTI activity records.
@@ -287,9 +285,7 @@ func (c *CUPTI) onCudaDeviceSynchronizeEnter(domain types.CUpti_CallbackDomain, 
 		"cupti_domain":      domain.String(),
 		"cupti_callback_id": cbid.String(),
 	}
-	if cbInfo.symbolName != nil {
-		tags["kernel"] = demangleName(cbInfo.symbolName)
-	}
+
 	span, _ := tracer.StartSpanFromContext(c.ctx, tracer.SYSTEM_LIBRARY_TRACE, "device_synchronize", tags)
 	if functionName != "" {
 		ext.Component.Set(span, functionName)
@@ -339,9 +335,7 @@ func (c *CUPTI) onCudaStreamSynchronizeEnter(domain types.CUpti_CallbackDomain, 
 		"cupti_domain":      domain.String(),
 		"cupti_callback_id": cbid.String(),
 	}
-	if cbInfo.symbolName != nil {
-		tags["kernel"] = demangleName(cbInfo.symbolName)
-	}
+
 	span, _ := tracer.StartSpanFromContext(c.ctx, tracer.SYSTEM_LIBRARY_TRACE, "stream_synchronize", tags)
 	if functionName != "" {
 		ext.Component.Set(span, functionName)
@@ -768,9 +762,7 @@ func (c *CUPTI) onCudaMemCopyDeviceEnter(domain types.CUpti_CallbackDomain, cbid
 		"destination_ptr": uintptr(params.dstDevice),
 		"source_ptr":      uintptr(unsafe.Pointer(params.srcHost)),
 	}
-	if cbInfo.symbolName != nil {
-		tags["kernel"] = demangleName(cbInfo.symbolName)
-	}
+
 	span, _ := tracer.StartSpanFromContext(c.ctx, tracer.SYSTEM_LIBRARY_TRACE, "cuda_memcpy_dev", tags)
 	if functionName != "" {
 		ext.Component.Set(span, functionName)
@@ -1317,9 +1309,7 @@ func (c *CUPTI) onCudaSynchronizeEnter(domain types.CUpti_CallbackDomain, cbid t
 		"cupti_domain":      domain.String(),
 		"cupti_callback_id": cbid.String(),
 	}
-	if cbInfo.symbolName != nil {
-		tags["kernel"] = demangleName(cbInfo.symbolName)
-	}
+
 	span, _ := tracer.StartSpanFromContext(c.ctx, tracer.SYSTEM_LIBRARY_TRACE, "cuda_synchronize", tags)
 	if functionName != "" {
 		ext.Component.Set(span, functionName)
@@ -1376,9 +1366,7 @@ func (c *CUPTI) onCudaMemCopyEnter(domain types.CUpti_CallbackDomain, cbid types
 		"source_ptr":      uintptr(unsafe.Pointer(params.src)),
 		"kind":            types.CUDAMemcpyKind(params.kind).String(),
 	}
-	if cbInfo.symbolName != nil {
-		tags["kernel"] = demangleName(cbInfo.symbolName)
-	}
+
 	span, _ := tracer.StartSpanFromContext(c.ctx, tracer.SYSTEM_LIBRARY_TRACE, "cuda_memcpy", tags)
 	if functionName != "" {
 		ext.Component.Set(span, functionName)
@@ -1432,9 +1420,7 @@ func (c *CUPTI) onCudaIpcGetEventHandleEnter(domain types.CUpti_CallbackDomain, 
 		"cuda_ipc_event_handle": uintptr(unsafe.Pointer(params.handle)),
 		"cuda_event":            uintptr(unsafe.Pointer(params.event)),
 	}
-	if cbInfo.symbolName != nil {
-		tags["kernel"] = demangleName(cbInfo.symbolName)
-	}
+
 	span, _ := tracer.StartSpanFromContext(c.ctx, tracer.SYSTEM_LIBRARY_TRACE, "cudaIpcGetEventHandle", tags)
 	if functionName != "" {
 		ext.Component.Set(span, functionName)
@@ -1488,9 +1474,7 @@ func (c *CUPTI) onCudaIpcOpenEventHandleEnter(domain types.CUpti_CallbackDomain,
 		"cuda_ipc_event_handle": params.handle,
 		"cuda_event":            uintptr(unsafe.Pointer(params.event)),
 	}
-	if cbInfo.symbolName != nil {
-		tags["kernel"] = demangleName(cbInfo.symbolName)
-	}
+
 	span, _ := tracer.StartSpanFromContext(c.ctx, tracer.SYSTEM_LIBRARY_TRACE, "cudaIpcOpenEventHandle", tags)
 	if functionName != "" {
 		ext.Component.Set(span, functionName)
@@ -1544,9 +1528,7 @@ func (c *CUPTI) onCudaIpcGetMemHandleEnter(domain types.CUpti_CallbackDomain, cb
 		"ptr":                 uintptr(unsafe.Pointer(params.devPtr)),
 		"cuda_ipc_mem_handle": uintptr(unsafe.Pointer(params.handle)),
 	}
-	if cbInfo.symbolName != nil {
-		tags["kernel"] = demangleName(cbInfo.symbolName)
-	}
+
 	span, _ := tracer.StartSpanFromContext(c.ctx, tracer.SYSTEM_LIBRARY_TRACE, "cudaIpcGetMemHandle", tags)
 	if functionName != "" {
 		ext.Component.Set(span, functionName)
@@ -1601,9 +1583,7 @@ func (c *CUPTI) onCudaIpcOpenMemHandleEnter(domain types.CUpti_CallbackDomain, c
 		"cuda_ipc_mem_handle": params.handle,
 		"flags":               params.flags,
 	}
-	if cbInfo.symbolName != nil {
-		tags["kernel"] = demangleName(cbInfo.symbolName)
-	}
+
 	span, _ := tracer.StartSpanFromContext(c.ctx, tracer.SYSTEM_LIBRARY_TRACE, "cudaIpcOpenMemHandle", tags)
 	if functionName != "" {
 		ext.Component.Set(span, functionName)
@@ -1656,9 +1636,7 @@ func (c *CUPTI) onCudaIpcCloseMemHandleEnter(domain types.CUpti_CallbackDomain, 
 		"cupti_callback_id": cbid.String(),
 		"ptr":               uintptr(unsafe.Pointer(params.devPtr)),
 	}
-	if cbInfo.symbolName != nil {
-		tags["kernel"] = demangleName(cbInfo.symbolName)
-	}
+
 	span, _ := tracer.StartSpanFromContext(c.ctx, tracer.SYSTEM_LIBRARY_TRACE, "cudaIpcCloseMemHandle", tags)
 	if functionName != "" {
 		ext.Component.Set(span, functionName)
