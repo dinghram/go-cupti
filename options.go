@@ -1,5 +1,7 @@
 package cupti
 
+import "C"
+
 import (
 	context "context"
 )

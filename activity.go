@@ -35,9 +35,9 @@ import (
 	"unsafe"
 
 	//humanize "github.com/dustin/go-humanize"
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/c3sr/go-cupti/types"
 	"github.com/c3sr/tracer"
+	opentracing "github.com/opentracing/opentracing-go"
 )
 
 const (
