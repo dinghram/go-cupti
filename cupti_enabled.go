@@ -3,7 +3,6 @@
 package cupti
 
 // #include <cupti.h>
-// #include "csrc/utils.hpp"
 // extern void CUPTIAPI kernelReplayCallback( char*  kernelName,  int numReplaysDone, void*  customData );
 import "C"
 import (
@@ -12,13 +11,11 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/k0kubun/pp/v3"
+	"github.com/pkg/errors"
 	"github.com/c3sr/go-cupti/types"
 	nvidiasmi "github.com/c3sr/nvidia-smi"
 	"github.com/c3sr/tracer"
-	"github.com/k0kubun/pp/v3"
-	opentracing "github.com/opentracing/opentracing-go"
-	spanlog "github.com/opentracing/opentracing-go/log"
-	"github.com/pkg/errors"
 )
 
 type CUPTI struct {
@@ -32,9 +29,6 @@ type CUPTI struct {
 	eventData       []*eventData
 	metricData      []*metricData
 	spans           sync.Map
-	correlationMap  map[uint64]int
-	correlationTime map[uint64]time.Time
-	profilingAPI    bool
 }
 
 type eventData struct {
@@ -69,9 +63,8 @@ func New(opts ...Option) (*CUPTI, error) {
 
 	options := NewOptions(opts...)
 	c := &CUPTI{
-		Options:      options,
-		eventData:    []*eventData{},
-		profilingAPI: bool(C.getProfilingAPI()),
+		Options:   options,
+		eventData: []*eventData{},
 	}
 
 	span, _ := tracer.StartSpanFromContext(options.ctx, tracer.FULL_TRACE, "cupti_new")
@@ -89,24 +82,6 @@ func New(opts ...Option) (*CUPTI, error) {
 	}
 	c.startTimeStamp = startTimeStamp
 	c.beginTime = time.Now()
-
-	if c.profilingAPI == true {
-		if len(c.metrics) == 0 {
-			C.startProfiling(nil)
-		} else {
-			metric := c.metrics[0]
-			for i := 1; i < len(c.metrics); i++ {
-				metric += ","
-				metric += c.metrics[i]
-			}
-			cMetric := C.CString(metric)
-			C.startProfiling(cMetric)
-			C.free(unsafe.Pointer(cMetric))
-		}
-
-		c.correlationMap = make(map[uint64]int)
-		c.correlationTime = make(map[uint64]time.Time)
-	}
 
 	return c, nil
 }
@@ -158,12 +133,9 @@ func (c *CUPTI) Unsubscribe() error {
 	if err := c.stopActivies(); err != nil {
 		return err
 	}
-	if !c.profilingAPI {
-		if err := c.deleteEventGroups(); err != nil {
-			return err
-		}
+	if err := c.deleteEventGroups(); err != nil {
+		return err
 	}
-
 	if err := c.cuptiUnsubscribe(); err != nil {
 		return err
 	}
@@ -174,41 +146,6 @@ func (c *CUPTI) Close() error {
 	if c == nil {
 		return nil
 	}
-
-	if c.profilingAPI {
-		var flattenedLength C.uint64_t
-
-		ptr := C.endProfiling(&flattenedLength)
-		if ptr != nil {
-			metricData := (*[1 << 30]float64)(unsafe.Pointer(ptr))[:uint64(flattenedLength):uint64(flattenedLength)]
-			c.spans.Range(func(key, value interface{}) bool {
-				spKey := key.(spanKey)
-				if spKey.tag == "cuda_launch" {
-					sp := value.(opentracing.Span)
-					st := c.correlationMap[spKey.correlationId] * len(c.metrics)
-					for i := 0; i < len(c.metrics); i++ {
-						sp.LogFields(spanlog.Float64(c.metrics[i], metricData[st+i]))
-					}
-					sp.FinishWithOptions(opentracing.FinishOptions{
-						FinishTime: c.correlationTime[spKey.correlationId],
-					})
-				}
-				return true
-			})
-		} else {
-      c.spans.Range(func(key, value interface{}) bool {
-				spKey := key.(spanKey)
-				if spKey.tag == "cuda_launch" {
-					sp := value.(opentracing.Span)
-					sp.FinishWithOptions(opentracing.FinishOptions{
-						FinishTime: c.correlationTime[spKey.correlationId],
-					})
-				}
-				return true
-			})
-    }
-	}
-
 	c.Unsubscribe()
 
 	currentCUPTI = nil
@@ -261,6 +198,47 @@ func (c *CUPTI) enableCallbacks() error {
 			return err
 		}
 	}
+	return nil
+}
+
+// not used
+func (c *CUPTI) init() error {
+	hasEvents := len(c.events) != 0
+	c.cuCtxs = make([]C.CUcontext, len(nvidiasmi.Info.GPUS))
+	if hasEvents {
+		c.eventData = make([]*eventData, len(nvidiasmi.Info.GPUS))
+	}
+	for ii, gpu := range nvidiasmi.Info.GPUS {
+		var cuCtx C.CUcontext
+
+		if err := checkCUResult(C.cuCtxCreate(&cuCtx, 0, C.CUdevice(ii))); err != nil {
+			log.WithError(err).
+				WithField("device_index", ii).
+				WithField("device_id", gpu.ID).
+				Error("failed to create cuda context")
+			return err
+		}
+		c.cuCtxs[ii] = cuCtx
+
+		if hasEvents {
+			ctxId := uint32(0)
+			err := checkCUPTIError(C.cuptiGetContextId(cuCtx, (*C.uint32_t)(&ctxId)))
+			if err != nil {
+				return errors.Wrap(err, "unable to get device id when creating resource context")
+			}
+
+			eventData, err := c.createEventGroup(cuCtx, ctxId, uint32(ii))
+			if err != nil {
+				return errors.Errorf("cannot create event group for device %d", ii)
+			}
+			c.eventData[ii] = eventData
+		}
+	}
+
+	if _, err := c.DeviceReset(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -541,4 +519,8 @@ func (c *CUPTI) deleteEventGroup(eventDataItem *eventData) error {
 		log.WithError(err).Error("unable to remove event group")
 	}
 	return nil
+}
+
+func dummy() {
+	pp.Println("")
 }
