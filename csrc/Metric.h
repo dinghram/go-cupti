@@ -65,11 +65,11 @@ namespace NV {
                 std::vector<std::string> temp;
                 GetRawMetricRequests(metricsContextCreateParams.pMetricsContext, metricNames, rawMetricRequests, temp);
 
-                NVPA_RawMetricsConfigOptions metricsConfigOptions = { NVPA_RAW_METRICS_CONFIG_OPTIONS_STRUCT_SIZE };
+                NVPW_CUDA_RawMetricsConfig_Create_Params metricsConfigOptions = { sizeof(NVPW_CUDA_RawMetricsConfig_Create_Params) };
                 metricsConfigOptions.activityKind = NVPA_ACTIVITY_KIND_PROFILER;
                 metricsConfigOptions.pChipName = chipName.c_str();
                 NVPA_RawMetricsConfig* pRawMetricsConfig;
-                RETURN_IF_NVPW_ERROR(false, NVPA_RawMetricsConfig_Create(&metricsConfigOptions, &pRawMetricsConfig));
+                RETURN_IF_NVPW_ERROR(false, NVPW_CUDA_RawMetricsConfig_Create(&metricsConfigOptions, &pRawMetricsConfig));
 
                 if(pCounterAvailabilityImage)
                 {
